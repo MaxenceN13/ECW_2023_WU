@@ -1,2 +1,2 @@
 # ECW_2023_WU
-Write-ups de challenges que j'ai résolus pendant l'ECW 2023.
+Write-ups des challenges que j'ai résolu pendant l'ECW 2023.
