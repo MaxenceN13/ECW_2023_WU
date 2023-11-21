@@ -16,4 +16,4 @@ Voici le problème modélisé avec entre parenthèse l'identifiant du sous group
 Et voici la résolution du problème (fait à la main) :
 ![problem solved](/moth/problem_solved.png)
 
-Ensuite, il nous a suffit de rentrer la solution, avec une petite modification sur les valeurs qui ne sont pas des chiffres mais des lettres dans le programme, et le serveur nous renvoie le flag.
+Ensuite, il a suffit de rentrer la solution, avec une petite modification sur la représentation des valeurs qui ne sont pas des chiffres mais des lettres dans le programme, et le serveur nous renvoie le flag.
